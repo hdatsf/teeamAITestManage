@@ -1,15 +1,26 @@
-import { spawn } from 'node:child_process';
+import { spawn, spawnSync } from 'node:child_process';
+import { existsSync } from 'node:fs';
 
-const npm = process.platform === 'win32' ? 'npm.cmd' : 'npm';
+const npmCli = process.env.npm_execpath;
+const canRunNpmCli = Boolean(npmCli && existsSync(npmCli));
 const children = [];
 let shuttingDown = false;
 
 function start(label, scriptArgs) {
-  const child = spawn(npm, scriptArgs, {
-    stdio: ['ignore', 'pipe', 'pipe'],
-    env: process.env,
-    shell: process.platform === 'win32',
-  });
+  const child = canRunNpmCli
+    ? spawn(process.execPath, [npmCli, ...scriptArgs], {
+        stdio: ['ignore', 'pipe', 'pipe'],
+        env: process.env,
+      })
+    : spawn(
+        process.platform === 'win32' ? `npm ${scriptArgs.join(' ')}` : 'npm',
+        process.platform === 'win32' ? [] : scriptArgs,
+        {
+          stdio: ['ignore', 'pipe', 'pipe'],
+          env: process.env,
+          shell: process.platform === 'win32',
+        },
+      );
   const prefix = `[${label}]`;
   const forward = (stream, target) => {
     let buffer = '';
@@ -35,7 +46,12 @@ function shutdown(code = 0) {
   if (shuttingDown) return;
   shuttingDown = true;
   for (const child of children) {
-    if (!child.killed) child.kill('SIGTERM');
+    if (child.killed) continue;
+    if (process.platform === 'win32') {
+      spawnSync('taskkill', ['/pid', String(child.pid), '/T', '/F'], { stdio: 'ignore' });
+    } else {
+      child.kill('SIGTERM');
+    }
   }
   setTimeout(() => process.exit(code), 150);
 }

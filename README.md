@@ -42,7 +42,14 @@ npm run dev
 ```
 
 > Windows 上如果 Vite 报 `Cannot find module @rollup/rollup-win32-x64-msvc`，通常是 npm 的全局
-> `.npmrc` 里设置了 `os=linux`。用 `npm install --os=win32 --cpu=x64` 重新安装即可。
+> `.npmrc` 里设置了 `os=linux`。在本项目根目录新建 `.npmrc`（已加入 `.gitignore`，不会提交）：
+>
+> ```ini
+> os=win32
+> cpu=x64
+> ```
+>
+> 然后重新 `npm install`；只想装一次也可以 `npm install --os=win32 --cpu=x64`。
 
 - 看板：<http://127.0.0.1:5173>
 - API：<http://127.0.0.1:4310>
