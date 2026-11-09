@@ -1,6 +1,6 @@
 {
   "name": "@teamai/plugin",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Zero-dependency TeamAI client: sync team skills and report usage from a managed project.",
   "type": "module",
   "bin": {

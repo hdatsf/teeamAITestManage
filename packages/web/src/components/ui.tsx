@@ -284,13 +284,15 @@ export function EmptyState({ title, hint }: { title: string; hint?: string }) {
 }
 
 function sourceLabel(source: string): string {
-  if (source === 'agent-hook') return 'Agent 自动';
+  if (source === 'agent-skill') return 'Agent 技能调用';
+  if (source === 'agent-hook') return 'Agent 读取';
   if (source === 'cli-use') return 'CLI';
   if (source === 'manual') return '手动补录';
   return source;
 }
 
 function sourceTitle(source: string): string {
+  if (source === 'agent-skill') return 'Agent 通过 Skill 工具调用 /skill:<slug> 时由 Kimi Code hook 自动上报';
   if (source === 'agent-hook') return 'Agent 用 Read 读取技能文件时由 Kimi Code hook 自动上报';
   if (source === 'cli-use') return '通过 teamai use 读取技能并上报';
   if (source === 'manual') return '通过 teamai track 手工补录';

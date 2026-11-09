@@ -196,11 +196,11 @@ export default function Usage({ usage, recent }: Props) {
             </li>
             <li>
               <strong>使用采集</strong>
-              <span>agent 读取 .teamai/skills 时由 Kimi Code PostToolUse hook 自动上报；teamai use 可一次完成读取与上报。</span>
+              <span>技能同步到 .teamai/skills，并投影到 Kimi Code 自动发现的 .kimi-code/skills；agent 调用 /skill:&lt;slug&gt; 时由 PostToolUse hook 自动上报。</span>
             </li>
             <li>
               <strong>按人聚合</strong>
-              <span>默认使用系统用户名，也可通过 --user 或 TEAMAI_USER 指定成员；流水标注 Agent 自动 / CLI / 手动补录。</span>
+              <span>默认使用系统用户名，也可通过 --user 或 TEAMAI_USER 指定成员；流水标注 Agent 技能调用 / Agent 读取 / CLI / 手动补录。</span>
             </li>
           </ol>
         </section>

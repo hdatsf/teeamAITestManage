@@ -9,7 +9,7 @@
 - **技能库**：发布 `SKILL.md`，自动递增版本、生成 SHA-256，支持在页面编辑并发布新版本。
 - **多项目分发**：被管理项目用零依赖插件 `teamai sync` 拉取最新技能，只更新变化的文件。
 - **同步健康度**：看板展示每个项目的最近同步、已安装技能数、落后版本、参与成员。
-- **使用洞察**：按成员、项目、技能聚合调用次数，标注 Agent 自动 / CLI / 手动补录来源，展示 30 天趋势与实时流水。
+- **使用洞察**：按成员、项目、技能聚合调用次数，标注 Agent 技能调用 / Agent 读取 / CLI / 手动补录来源，展示 30 天趋势与实时流水。
 - **开箱即用演示数据**：内置 4 个技能、4 个项目（含被管理项目）、多名成员近两周的同步与使用记录。
 
 ## 架构
@@ -20,8 +20,8 @@
 │                             │        │                              │
 │  packages/web  ── 看板      │        │  .teamai/bin/teamai.mjs      │
 │  packages/server ── API     │◀──────▶│  .teamai/skills/*/SKILL.md   │
-│  packages/plugin ── 分发     │  HTTP  │  .teamai/lock.json           │
-│  skills/       ── 技能源     │        │                              │
+│  packages/plugin ── 分发     │  HTTP  │  .kimi-code/skills/*/SKILL.md│
+│  skills/       ── 技能源     │        │  .teamai/lock.json           │
 │  data/teamai.db ── SQLite   │        │  npm run teamai:sync         │
 └─────────────────────────────┘        └──────────────────────────────┘
          ▲                                          │
@@ -71,17 +71,18 @@ npm start
    ```bash
    npm run teamai:install
    npm run teamai:sync
-   npm run teamai:agent-hooks   # 一次性：让 Kimi Code 在 agent 读取技能时自动上报
-   npm run teamai:use -- code-review
+   npm run teamai:agent-hooks   # 一次性：让 Kimi Code 在调用/读取技能时自动上报
    ```
-3. 看板「项目」出现 `hdatsfTeamAITest`，状态「已同步」；「使用情况」出现当前系统用户，流水来源标记 `Agent 自动` 或 `CLI`。
-4. 在看板「技能库」点击任意技能 →「发布新版本」，修改正文后发布。
-5. 回到被管理项目执行 `npm run teamai:sync`，再打开 `npm run teamai:status`，版本已更新。
-6. 管理端项目详情中可看到新版本与落后项消失。
+3. 在被管理项目新开一个 Kimi Code 会话，直接调用 `/skill:code-review`。
+4. 看板「项目」出现 `hdatsfTeamAITest`，状态「已同步」；「使用情况」出现当前系统用户，流水来源标记 `Agent 技能调用` 或 `CLI`。
+5. 在看板「技能库」点击任意技能 →「发布新版本」，修改正文后发布。
+6. 回到被管理项目执行 `npm run teamai:sync`，再打开 `npm run teamai:status`，版本已更新。
+7. 管理端项目详情中可看到新版本与落后项消失。
 
 使用数据来自 agent 的真实行为，而不是演示脚本：
 
-- **Kimi Code hook**：`teamai install-agent-hooks` 在用户级 `~/.kimi-code/config.toml` 追加一条 `PostToolUse` 规则，agent 用 Read 读取 `.teamai/skills/<slug>/SKILL.md` 时自动上报（每个会话每个技能一次）。hook 不存在于项目里，因此不会被仓库内容注入，也不会随 clone 自动生效；新会话启动后生效，可用 `teamai uninstall-agent-hooks` 移除。
+- **Kimi Code hook**：`teamai install-agent-hooks` 在用户级 `~/.kimi-code/config.toml` 追加一条 `PostToolUse` 规则（`matcher = "Read|Skill"`）。agent 通过 `/skill:<slug>` 调用技能，或用 Read 读取 `.teamai/skills/<slug>/SKILL.md` / `.kimi-code/skills/<slug>/SKILL.md` 时自动上报（每个会话每个技能一次）；Skill 调用标记为 `agent-skill`，Read 标记为 `agent-hook`。hook 不存在于项目里，因此不会被仓库内容注入，也不会随 clone 自动生效；新会话启动后生效，可用 `teamai uninstall-agent-hooks` 移除。
+- **技能发现**：`teamai sync` 把 `.teamai/skills` 投影到 `.kimi-code/skills`，frontmatter 的 `name` 统一为 slug，Kimi Code 新会话可直接发现 `/skill:<slug>`。
 - **`teamai use <slug>`**：打印技能内容并上报，跨 agent 的通用入口。
 - **`teamai track`**：只用于事后补录或第三方 agent 兜底，流水会标记为「手动补录」。
 - **Git hook**：`teamai install-hooks` 只负责 `git pull` / `git checkout` 后的技能同步，无法证明技能被使用，因此不用于使用上报。
