@@ -55,6 +55,7 @@ export interface Activity {
   detail: string | null;
   durationMs: number | null;
   createdAt: string;
+  source: string | null;
 }
 
 export interface Overview {

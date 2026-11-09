@@ -111,7 +111,7 @@ export default function Usage({ usage, recent }: Props) {
       <section className="panel table-panel users-panel">
         <SectionHeading eyebrow="MEMBERS" title="成员明细" />
         {usage.users.length === 0 ? (
-          <EmptyState title="暂无成员数据" hint="被管理项目运行 teamai track 后，这里会显示成员使用情况。" />
+          <EmptyState title="暂无成员数据" hint="agent 读取技能、或运行 teamai use 后，这里会显示成员使用情况。" />
         ) : (
           <div className="table-scroll">
             <table className="data-table">
@@ -191,16 +191,16 @@ export default function Usage({ usage, recent }: Props) {
           <SectionHeading eyebrow="HOW IT WORKS" title="数据从哪里来" />
           <ol className="how-list">
             <li>
-              <strong>插件上报</strong>
-              <span>teamai sync 与 teamai track 将项目、成员、技能版本写入控制平面。</span>
+              <strong>同步</strong>
+              <span>git post-merge / post-checkout hook 自动同步团队技能，版本漂移在项目页可见。</span>
+            </li>
+            <li>
+              <strong>使用采集</strong>
+              <span>agent 读取 .teamai/skills 时由 Kimi Code PostToolUse hook 自动上报；teamai use 可一次完成读取与上报。</span>
             </li>
             <li>
               <strong>按人聚合</strong>
-              <span>默认使用系统用户名，也可通过 --user 或 TEAMAI_USER 指定团队成员。</span>
-            </li>
-            <li>
-              <strong>实时看板</strong>
-              <span>看板每 15 秒刷新一次，无需额外部署分析服务。</span>
+              <span>默认使用系统用户名，也可通过 --user 或 TEAMAI_USER 指定成员；流水标注 Agent 自动 / CLI / 手动补录。</span>
             </li>
           </ol>
         </section>

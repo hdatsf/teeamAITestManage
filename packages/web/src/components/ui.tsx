@@ -283,6 +283,20 @@ export function EmptyState({ title, hint }: { title: string; hint?: string }) {
   );
 }
 
+function sourceLabel(source: string): string {
+  if (source === 'agent-hook') return 'Agent 自动';
+  if (source === 'cli-use') return 'CLI';
+  if (source === 'manual') return '手动补录';
+  return source;
+}
+
+function sourceTitle(source: string): string {
+  if (source === 'agent-hook') return 'Agent 用 Read 读取技能文件时由 Kimi Code hook 自动上报';
+  if (source === 'cli-use') return '通过 teamai use 读取技能并上报';
+  if (source === 'manual') return '通过 teamai track 手工补录';
+  return source;
+}
+
 export function ActivityItem({ event, showProject = true }: { event: Activity; showProject?: boolean }) {
   const iconName =
     event.type === 'sync'
@@ -336,6 +350,11 @@ export function ActivityItem({ event, showProject = true }: { event: Activity; s
         ) : null}{' '}
         使用了 <span className="activity-target">{event.skillName ?? event.skillSlug}</span>
         {event.version && <span className="version-pill">v{event.version}</span>}
+        {event.source && (
+          <span className="source-pill" title={sourceTitle(event.source)}>
+            {sourceLabel(event.source)}
+          </span>
+        )}
       </>
     );
   } else {

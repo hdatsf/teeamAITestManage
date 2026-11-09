@@ -2,7 +2,7 @@
 name: Code Review
 description: 结构化代码评审清单，覆盖正确性、可读性、安全性与可验证性。
 tags: quality, review, git
-version: 1.2.0
+version: 1.2.3
 ---
 
 # Code Review

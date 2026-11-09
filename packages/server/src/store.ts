@@ -25,6 +25,7 @@ export interface Activity {
   detail: string | null;
   durationMs: number | null;
   createdAt: string;
+  source: string | null;
 }
 
 export interface SkillView {
@@ -78,6 +79,22 @@ export interface UserUsage {
 
 function cutoff(days: number): string {
   return new Date(Date.now() - days * 86_400_000).toISOString();
+}
+
+type ActivityRow = Omit<Activity, 'source'> & { meta: string | null };
+
+function toActivity(row: ActivityRow): Activity {
+  const { meta, ...rest } = row;
+  let source: string | null = null;
+  if (meta) {
+    try {
+      const parsed = JSON.parse(meta) as { source?: unknown };
+      if (typeof parsed.source === 'string') source = parsed.source;
+    } catch {
+      source = null;
+    }
+  }
+  return { ...rest, source };
 }
 
 function dateSeries(days: number, rows: Array<{ date: string; count: number }>) {
@@ -284,18 +301,18 @@ export function getSkillViews(days = 7): SkillView[] {
 }
 
 export function getActivity(limit = 50): Activity[] {
-  return all<Activity>(
+  return all<ActivityRow>(
     `SELECT e.id, e.type, e.project_id AS projectId, p.name AS projectName,
             e.actor, e.skill_slug AS skillSlug, s.name AS skillName,
             e.version, e.action, e.detail, e.duration_ms AS durationMs,
-            e.created_at AS createdAt
+            e.created_at AS createdAt, e.meta AS meta
      FROM events e
      LEFT JOIN projects p ON p.id = e.project_id
      LEFT JOIN skills s ON s.slug = e.skill_slug
      ORDER BY e.created_at DESC, e.id DESC
      LIMIT ?`,
     limit,
-  );
+  ).map(toActivity);
 }
 
 export function getUsage(days = 30) {
@@ -383,18 +400,18 @@ export function getProjectDetail(id: string) {
     latestVersion: latest.get(row.slug)?.version ?? 'unknown',
     current: latest.get(row.slug)?.version === row.version,
   }));
-  const events = all<Activity>(
+  const events = all<ActivityRow>(
     `SELECT e.id, e.type, e.project_id AS projectId, p.name AS projectName,
             e.actor, e.skill_slug AS skillSlug, s.name AS skillName,
             e.version, e.action, e.detail, e.duration_ms AS durationMs,
-            e.created_at AS createdAt
+            e.created_at AS createdAt, e.meta AS meta
      FROM events e
      LEFT JOIN projects p ON p.id = e.project_id
      LEFT JOIN skills s ON s.slug = e.skill_slug
      WHERE e.project_id = ?
      ORDER BY e.created_at DESC, e.id DESC LIMIT 30`,
     id,
-  );
+  ).map(toActivity);
   return { project, installed, events };
 }
 
